@@ -14,6 +14,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sympy import inverse_laplace_transform, laplace_transform, latex, symbols
+from sympy import integrate, oo, exp as sym_exp, simplify, Heaviside, DiracDelta
 from sympy.parsing.sympy_parser import (
     convert_xor,
     implicit_multiplication_application,
@@ -64,6 +65,22 @@ class TransformResponse(BaseModel):
 def health():
     return {"status": "ok"}
 
+def compute_forward(expr, t, s):
+    """Try laplace_transform; fall back to direct integration if it chokes."""
+    try:
+        result = laplace_transform(expr, t, s, noconds=True)
+        if result.has(laplace_transform):
+            raise ValueError("unevaluated")
+        return simplify(result)
+    except Exception:
+        result = integrate(expr * sym_exp(-s * t), (t, 0, oo))
+        return simplify(result)
+
+
+def compute_inverse(expr, s, t):
+    """inverse_laplace_transform is more reliable; no fallback needed usually."""
+    result = inverse_laplace_transform(expr, s, t, noconds=True)
+    return simplify(result)
 
 @app.post("/api/transform", response_model=TransformResponse)
 def transform(req: TransformRequest):
@@ -80,11 +97,11 @@ def transform(req: TransformRequest):
     # Compute via SymPy
     try:
         if req.direction == "forward":
-            result = laplace_transform(expr, t, s, noconds=True)
+            result = compute_forward(expr, t, s)
             transform_desc = "Laplace transform"
             input_var, output_var = "t", "s"
         elif req.direction == "inverse":
-            result = inverse_laplace_transform(expr, s, t, noconds=True)
+            result = compute_inverse(expr, s, t)
             transform_desc = "inverse Laplace transform"
             input_var, output_var = "s", "t"
         else:

@@ -167,7 +167,7 @@ export default function App() {
       <footer>
         <p>
           Math by SymPy. Explanations by Claude, grounded on the SymPy answer.
-          Explanations may contain reasoning errors — the final result is always correct.
+          Explanations may contain reasoning errors. The final result is always correct.
         </p>
       </footer>
     </div>
