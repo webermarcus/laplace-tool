@@ -14,7 +14,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sympy import inverse_laplace_transform, laplace_transform, latex, symbols
-from sympy import integrate, oo, exp as sym_exp, simplify, Heaviside, DiracDelta
+from sympy import integrate, oo, exp as sym_exp, simplify, Heaviside, DiracDelta, Integral
 from sympy.parsing.sympy_parser import (
     convert_xor,
     implicit_multiplication_application,
@@ -43,7 +43,7 @@ PARSE_TRANSFORMS = standard_transformations + (
 )
 
 t = symbols("t", positive=True)
-s = symbols("s", positive=True)
+s = symbols("s")
 # Ensures parse_expr uses these exact symbols rather than creating new ones —
 # if parse_expr creates its own `t`, laplace_transform sees a mismatch and
 # silently returns nonsense (e.g. sin(t)/s instead of 1/(s^2+1)).
@@ -66,15 +66,32 @@ def health():
     return {"status": "ok"}
 
 def compute_forward(expr, t, s):
-    """Try laplace_transform; fall back to direct integration if it chokes."""
+    """Try laplace_transform, then direct integration, then Meijer G."""
+    # Attempt 1: built-in laplace_transform
     try:
         result = laplace_transform(expr, t, s, noconds=True)
-        if result.has(laplace_transform):
-            raise ValueError("unevaluated")
-        return simplify(result)
+        if not result.has(laplace_transform):
+            return simplify(result)
     except Exception:
+        pass
+
+    # Attempt 2: direct integration (standard path)
+    try:
         result = integrate(expr * sym_exp(-s * t), (t, 0, oo))
-        return simplify(result)
+        if not isinstance(result, Integral) and not result.has(Integral):
+            return simplify(result)
+    except Exception:
+        pass
+
+    # Attempt 3: Meijer G integration — handles products of special functions
+    try:
+        result = integrate(expr * sym_exp(-s * t), (t, 0, oo), meijerg=True)
+        if not isinstance(result, Integral) and not result.has(Integral):
+            return simplify(result)
+    except Exception:
+        pass
+
+    raise ValueError("SymPy couldn't compute this transform with any method")
 
 
 def compute_inverse(expr, s, t):
@@ -98,22 +115,16 @@ def transform(req: TransformRequest):
     try:
         if req.direction == "forward":
             result = compute_forward(expr, t, s)
-            transform_desc = "Laplace transform"
-            input_var, output_var = "t", "s"
         elif req.direction == "inverse":
             result = compute_inverse(expr, s, t)
-            transform_desc = "inverse Laplace transform"
-            input_var, output_var = "s", "t"
         else:
-            raise HTTPException(
-                status_code=400, detail="direction must be 'forward' or 'inverse'"
-            )
+            raise HTTPException(status_code=400, detail="direction must be 'forward' or 'inverse'")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"SymPy couldn't compute the transform: {e}"
-        )
+        raise HTTPException(status_code=500, detail=f"Computation failed: {e}")
 
     # Ask Claude to narrate — grounded on SymPy's answer.
     prompt = f"""You are explaining a {transform_desc} to a student.
