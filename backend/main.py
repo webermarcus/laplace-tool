@@ -115,8 +115,12 @@ def transform(req: TransformRequest):
     try:
         if req.direction == "forward":
             result = compute_forward(expr, t, s)
+            transform_desc = "Laplace transform"
+            input_var, output_var = "t", "s"
         elif req.direction == "inverse":
             result = compute_inverse(expr, s, t)
+            transform_desc = "inverse Laplace transform"
+            input_var, output_var = "s", "t"
         else:
             raise HTTPException(status_code=400, detail="direction must be 'forward' or 'inverse'")
     except ValueError as e:
