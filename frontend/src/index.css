@@ -1,0 +1,148 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+  background: #fafaf7;
+  color: #222;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+header h1 {
+  font-size: 1.75rem;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  color: #666;
+  margin: 0 0 2rem;
+}
+
+.input-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e5e0;
+  margin-bottom: 2rem;
+}
+
+.direction-toggle {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.direction-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.expression-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.expression-input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1.05rem;
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 0.4rem;
+  background: #fafaf7;
+}
+
+.expression-input:focus {
+  outline: none;
+  border-color: #5a7cc7;
+  background: white;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0.5rem 0 1rem;
+}
+
+button[type='submit'] {
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 120ms ease;
+}
+
+button[type='submit']:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+button[type='submit']:hover:not(:disabled) {
+  background: #1a2530;
+}
+
+.error {
+  padding: 1rem;
+  background: #fdecea;
+  border: 1px solid #f5c2c0;
+  border-radius: 8px;
+  color: #a94442;
+  margin-bottom: 1rem;
+}
+
+.result section {
+  background: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e5e0;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.result h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem;
+}
+
+.explanation {
+  white-space: pre-wrap;
+}
+
+.explanation .katex-display {
+  margin: 0.6em 0;
+}
+
+footer {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+}
