@@ -41,7 +41,8 @@ PARSE_TRANSFORMS = standard_transformations + (
     convert_xor,
 )
 
-t, s = symbols("t s")
+t = symbols("t", positive=True)
+s = symbols("s", positive=True)
 # Ensures parse_expr uses these exact symbols rather than creating new ones —
 # if parse_expr creates its own `t`, laplace_transform sees a mismatch and
 # silently returns nonsense (e.g. sin(t)/s instead of 1/(s^2+1)).
